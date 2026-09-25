@@ -1,0 +1,8 @@
+---
+include:
+  - https://salsa.debian.org/installer-team/branch2repo/raw/main/trigger_b2r.yml
+
+variables:
+  # these tests are pointless for purely Architecture: all
+  SALSA_CI_DISABLE_BUILD_PACKAGE_ANY: '1'
+  SALSA_CI_DISABLE_CROSSBUILD_ARM64: '1'

@@ -1,0 +1,3 @@
+#!/bin/sh
+set -eu
+exec /usr/bin/fastfetch --config /usr/share/osmium/fastfetch/osmium.jsonc "$@"

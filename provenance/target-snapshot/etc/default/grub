@@ -1,0 +1,13 @@
+GRUB_DEFAULT=0
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TIMEOUT=5
+GRUB_DISABLE_RECOVERY=true
+GRUB_DISABLE_OS_PROBER=true
+GRUB_GFXMODE=1920x1080,auto
+GRUB_THEME="/boot/grub/themes/whitesur/theme.txt"
+
+GRUB_DISTRIBUTOR="Osmium OS"
+
+GRUB_BACKGROUND="/boot/grub/themes/whitesur/background.jpg"
+
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"

@@ -1,0 +1,14 @@
+# Core live-session packages for OsmiumOS.
+# Calamares is replaced by the locally built v3.4.3 package when available.
+calamares
+gnome
+gnome-core
+gdm3
+task-gnome-desktop
+live-boot
+live-config
+live-config-systemd
+live-tools
+network-manager
+sudo
+systemd-sysv

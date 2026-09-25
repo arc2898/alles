@@ -1,0 +1,60 @@
+gnome-core
+==========
+The intent of the GNOME Core metapackage is to closely match what
+GNOME themselves determine to be core GNOME. The apps are listed in
+https://gitlab.gnome.org/GNOME/gnome-build-meta/-/tree/master/elements/core/meta-gnome-core-shell.bst
+https://gitlab.gnome.org/GNOME/gnome-build-meta/-/tree/master/elements/core/meta-gnome-core-apps.bst
+
+However, we do make a few adjustments to better fit our user's needs:
+- Firefox ESR is preferred over Epiphany
+- Several Sharing extensions are Recommends to allow them to be uninstalled
+  + GNOME Remote Desktop
+  + GNOME User Share
+  + Rygel / Media Sharing
+- GNOME Initial Setup is suggested instead of pre-installed
+  because it isn't needed in typical installs done by the Debian Installer
+- GNOME Color Manager is suggested
+  + It provides some minor functionality in Setttings > Color
+- GNOME Music is not included in GNOME Core but is currently include in
+  the gnome metapackage
+  + It is an unusual app for a default music player
+
+gnome
+=====
+A separate metapackage, gnome, includes several apps to supplement core GNOME.
+It is installed with the GNOME task during the install of Debian.
+
+switching default apps
+======================
+Sometimes it may seem useful for the metapackages to provide alternatives
+to allow users who prefer an older or newer variant to install those instead.
+For instance: gnome-text-editor | gedit. Debian doesn't provide a direct way
+to ensure that users who upgrade to a new Debian release will have the first
+alternative dependency installed from the list of alternatives. Therefore,
+we generally do not provide alternative dependencies when switching default
+apps.
+
+Users are welcome to uninstall the undesired app which would uninstall
+the metapackage. The metapackage provides no other functionality than
+to provide a standard list of packages that should be installed.
+Or users can copy the .desktop from /usr/share/applications/ to
+~/.local/share/applications and add this line:
+NoDisplay=true
+to hide the undesired app from the list of apps in the GNOME Overview.
+
+apt is configured to keep packages installed if they are demoted to Suggests.
+
+GNOME Initial Setup
+===================
+OEMs may find it useful to pre-install gnome-initial-setup.
+gnome-initial-setup has a new user mode where it provides a wizard for
+the end user to create their own username and password. This only
+shows up if the system does not have a regular user configured
+(typical userid >=1000); which is not a typical result for a
+system installed with the Debian installer.
+
+OEMs should also ensure that appropriate locales are configured for
+their target users. English spellchecking, thesaurus, hyphenation,
+and LibreOffice help is pre-installed; OEMs can pre-install similar
+packages for other languages. See the binary packages provided by
+the tasksel source package for ideas.

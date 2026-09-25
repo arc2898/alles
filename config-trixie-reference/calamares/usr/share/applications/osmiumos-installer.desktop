@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install OsmiumOS
+GenericName=OsmiumOS Installer
+Comment=Install OsmiumOS with Calamares
+Keywords=osmium;calamares;system;install;
+Exec=osmiumos-installer
+Icon=osmiumos
+Terminal=false
+Categories=Qt;System;
+StartupWMClass=calamares
+StartupNotify=true

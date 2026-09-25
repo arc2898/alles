@@ -1,0 +1,23 @@
+#!/bin/sh
+# © 2025 Cyril Brulebois <kibi@debian.org>
+#
+# Lomiri can target regular desktops (task-lomiri-desktop) but also tablets
+# (task-lomiri-tablet). We'd like to avoid multiple entries in pkgsel/tasksel,
+# so we're only adding one to start with: task-lomiri-desktop.
+#
+# This test leverages NEW_INSTALL to skip the tablet entry in the installer,
+# while still including it if tasksel is run later, within the installed system.
+#
+# If and when appropriate heuristics are determined, the tablet variant could be
+# included in the installer as well, conditionally (without overloading the menu
+# for most users).
+#
+# For example, if $2 is "true" and if hardware is detected as being a tablet:
+#
+#     exit 0 # show; don't mark.
+
+if [ "$NEW_INSTALL" ]; then
+	exit 1 # hide; don't install
+else
+	exit 3 # show; don't mark
+fi

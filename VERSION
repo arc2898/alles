@@ -1,0 +1,6 @@
+0.1.0-dev
+base-suite=forky
+base-suite-name=Debian Forky/sid
+desktop=GNOME 50
+installer=Calamares 3.4.3
+build-state=source-review-only

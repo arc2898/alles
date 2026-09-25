@@ -1,0 +1,8 @@
+Task: lomiri-tablet
+Relevance: 8
+Parent: desktop
+# Only perform one test, the tablet one (i.e. no Test-default-desktop here):
+Test-tablet: true
+Section: user
+Key:
+  task-lomiri-tablet

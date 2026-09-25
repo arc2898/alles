@@ -1,0 +1,7 @@
+Task: phosh-desktop
+Relevance: 8
+Parent: desktop
+Test-default-desktop: 3 phosh
+Section: user
+Key:
+  task-phosh-desktop

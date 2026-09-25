@@ -1,0 +1,26 @@
+Osmium OS — Dash2Dock Animated v92 pin/drag patch (2026-09-25)
+
+Problem: right-click pinning and drag-to-pin did nothing on the dock.
+Cause: the visible dock icons are animator renderer actors (no menus, no
+drop handling); Shell's overview dash (the stock drop target) is hidden by
+the extension; no acceptDrop existed anywhere in the extension code.
+
+Patch (additive, guarded, everything wrapped so failures fall back to
+previous behavior):
+- dock.js: DND import; DashToDock.handleDragOver/acceptDrop/_pinDropAppId
+  (drop an app from the overview onto the dock to pin it via Shell
+  favorites; internal reorder drags ignored via this._dragging);
+  DockBackground made reactive so gaps between icons accept drops.
+- animator.js: Shell/Fav/PopupMenu imports; right-click (button 3) on a
+  renderer opens a Pin to Dock / Unpin from Dock menu for installed apps
+  only (verified via AppSystem.lookup_app); left clicks propagate
+  unchanged; dynamic-item icons (trash/downloads/mounts) resolve no
+  installed app id and keep previous behavior.
+
+Validated: node --check (ES module parse) passes on both files using the
+target's own nodejs.
+
+Revert: as root on the Osmium system (or offline chroot):
+  rm -rf /usr/share/gnome-shell/extensions/dash2dock-lite@icedman.github.com
+  tar -xzf dash2dock-lite-before-pin-patch.tar.gz -C /usr/share/gnome-shell/extensions
+  (then log out and back in)

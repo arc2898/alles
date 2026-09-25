@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+# live-build exposes the project configuration read-only at this path.
+overlay=/live-build/config/calamares
+[ -d "$overlay" ] || exit 0
+
+mkdir -p /etc /usr
+cp -a "$overlay/etc/." /etc/
+cp -a "$overlay/usr/." /usr/
+
+# The installer launcher and Calamares helper modules must be executable.
+find /usr/lib/calamares/modules -type f -name '*.desc' -exec chmod 0644 {} + 2>/dev/null || true
+find /usr/share/calamares/helpers -type f -exec chmod 0755 {} + 2>/dev/null || true
+chmod 0755 /usr/bin/osmiumos-installer

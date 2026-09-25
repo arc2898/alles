@@ -1,0 +1,162 @@
+--- dash2dock-lite/dock.js.before
++++ dash2dock-lite/dock.js
+@@ -3,6 +3,7 @@
+ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+ import * as Fav from 'resource:///org/gnome/shell/ui/appFavorites.js';
+ import * as Config from 'resource:///org/gnome/shell/misc/config.js';
++import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
+ 
+ import Shell from 'gi://Shell';
+ import GObject from 'gi://GObject';
+@@ -73,6 +74,7 @@
+       this._monitorIndex = Main.layoutManager.primaryIndex;
+ 
+       this._background = new DockBackground({ name: 'd2daBackground' });
++      this._background.reactive = true;
+       this.add_child(this._background);
+ 
+       // for blur-my-shell
+@@ -227,6 +229,54 @@
+       return Clutter.EVENT_PROPAGATE;
+     }
+ 
++    // Osmium OS patch: drop-to-pin. Lets users drag an app from the
++    // overview onto the dock to pin it (Shell favorites), and right-click
++    // handling lives in animator.js (renderer actors).
++    _pinDropAppId(source) {
++      try {
++        if (!source) return null;
++        if (Main.xdndHandler && source === Main.xdndHandler) return null;
++        const app = source.app;
++        if (app && typeof app.get_id === 'function') {
++          const id = app.get_id();
++          if (id) return id;
++        }
++        if (typeof source.id === 'string' && source.id.endsWith('.desktop')) {
++          return source.id;
++        }
++      } catch (e) {
++        // ignore malformed drag sources
++      }
++      return null;
++    }
++
++    handleDragOver(source) {
++      try {
++        // internal icon reorder drags are handled by the icons themselves
++        if (this._dragging) return false;
++        if (!this._pinDropAppId(source)) return false;
++        if (DND.DragState && DND.DragState.COPY_DROP !== undefined) {
++          return DND.DragState.COPY_DROP;
++        }
++      } catch (e) {
++        // ignore
++      }
++      return false;
++    }
++
++    acceptDrop(source) {
++      try {
++        if (this._dragging) return false;
++        const id = this._pinDropAppId(source);
++        if (!id) return false;
++        Fav.getAppFavorites().addFavorite(id);
++        return true;
++      } catch (e) {
++        // ignore
++      }
++      return false;
++    }
++
+     _debouncedBeginAnimation() {
+       this.dash.opacity = 1;
+ 
+--- dash2dock-lite/animator.js.before
++++ dash2dock-lite/animator.js
+@@ -5,6 +5,9 @@
+ import Graphene from 'gi://Graphene';
+ import Clutter from 'gi://Clutter';
+ import Gio from 'gi://Gio';
++import Shell from 'gi://Shell';
++import * as Fav from 'resource:///org/gnome/shell/ui/appFavorites.js';
++import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+ const Point = Graphene.Point;
+ 
+ import { Dot } from './apps/dot.js';
+@@ -594,6 +597,76 @@
+         icon._renderer._icon = icon._icon;
+         icon._renderer.set_style_class_name('');
+ 
++        // Osmium OS patch: right-click Pin/Unpin. The visible dock icons are
++        // renderer actors without menus, so wire pinning here. The app is
++        // resolved at click time since renderers are pooled and reused.
++        icon._renderer._dockIcon = icon;
++        if (!icon._renderer._pinMenuWired) {
++          icon._renderer._pinMenuWired = true;
++          const renderer = icon._renderer;
++          renderer._pinMenuManager = new PopupMenu.PopupMenuManager(renderer);
++          renderer.connect('button-press-event', (actor, evt) => {
++            try {
++              if (evt.get_button() !== 3) return Clutter.EVENT_PROPAGATE;
++              const ditem = actor._dockIcon;
++              const app =
++                ditem && ditem._appwell ? ditem._appwell.app : null;
++              const appId =
++                app && typeof app.get_id === 'function'
++                  ? app.get_id()
++                  : null;
++              if (!appId) return Clutter.EVENT_PROPAGATE;
++              let sysApp = null;
++              try {
++                sysApp = Shell.AppSystem.get_default().lookup_app(appId);
++              } catch (e) {
++                sysApp = null;
++              }
++              if (!sysApp) return Clutter.EVENT_PROPAGATE;
++              try {
++                if (renderer._pinMenu) renderer._pinMenu.destroy();
++              } catch (e) {
++                // ignore
++              }
++              renderer._pinMenu = null;
++              const favs = Fav.getAppFavorites();
++              const menu = new PopupMenu.PopupMenu(actor, St.Side.TOP);
++              renderer._pinMenu = menu;
++              Main.uiGroup.add_child(menu.actor);
++              const pinned = favs.isFavorite(appId);
++              const toggle = new PopupMenu.PopupMenuItem(
++                pinned ? 'Unpin from Dock' : 'Pin to Dock'
++              );
++              toggle.connect('activate', () => {
++                try {
++                  if (pinned) favs.removeFavorite(appId);
++                  else favs.addFavorite(appId);
++                } catch (e) {
++                  // ignore
++                }
++              });
++              menu.addMenuItem(toggle);
++              renderer._pinMenuManager.addMenu(menu);
++              menu.connect('open-state-changed', (m, open) => {
++                if (renderer._pinMenu === m) renderer._pinMenu = null;
++                if (!open) {
++                  try {
++                    renderer._pinMenuManager.removeMenu(menu);
++                  } catch (e) {
++                    // ignore
++                  }
++                  menu.destroy();
++                }
++              });
++              menu.popup();
++              renderer._pinMenuManager.ignoreRelease();
++              return Clutter.EVENT_STOP;
++            } catch (e) {
++              return Clutter.EVENT_PROPAGATE;
++            }
++          });
++        }
++
+         if (!icon._appwell?._bounce) {
+           icon._renderer.translationY = 0;
+         }

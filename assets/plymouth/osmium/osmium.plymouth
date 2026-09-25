@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Osmium
+Description=Osmium OS boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/osmium
+ScriptFile=/usr/share/plymouth/themes/osmium/osmium.script

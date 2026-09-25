@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+# osmium-extensions — manage system-wide GNOME Shell extensions on Osmium OS.
+# Must run as root on the Osmium system (edits /usr/share and /etc/dconf).
+# Usage:
+#   osmium-extensions list
+#   osmium-extensions on <uuid>        # enable a system extension
+#   osmium-extensions off <uuid|all>   # disable (keep files)
+#   osmium-extensions remove <uuid>    # disable + move files to backup
+#   osmium-extensions restore <uuid|all>
+set -Eeuo pipefail
+EXT_DIR=/usr/share/gnome-shell/extensions
+BACKUP_DIR=/var/lib/osmium/disabled-extensions
+DB=/etc/dconf/db/osmium.d/00-osmium-extensions
+
+fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+[[ "$(id -u)" -eq 0 ]] || fail 'run as root'
+[[ -f "$DB" ]] || fail "system defaults file missing: $DB"
+
+read_list() {
+  python3 -c "
+import re
+text = open('$DB').read()
+m = re.search(r'^enabled-extensions=(.*)$', text, re.M)
+items = []
+if m:
+    for part in m.group(1).strip().strip('[]').split(','):
+        part = part.strip().strip(chr(39))
+        if part:
+            items.append(part)
+print('\n'.join(items))
+"
+}
+
+write_list() {
+  # write_list uuid1 [uuid2 ...]  (empty args = disable all)
+  python3 - "$DB" "$@" <<'PY'
+from pathlib import Path
+import re, sys
+p = Path(sys.argv[1])
+uuids = sys.argv[2:]
+text = p.read_text()
+if uuids:
+    new = '[' + ','.join("'" + u + "'" for u in uuids) + ']'
+else:
+    new = '@as []'
+text2, n = re.subn(r'^enabled-extensions=.*$', 'enabled-extensions=' + new, text, count=1, flags=re.M)
+if not n:
+    raise SystemExit('enabled-extensions line not found')
+p.write_text(text2)
+PY
+  dconf update
+}
+
+cmd_list() {
+  mapfile -t enabled < <(read_list)
+  printf '%-55s %-9s %s\n' 'UUID' 'ENABLED' 'NAME'
+  for d in "$EXT_DIR"/*/; do
+    [[ -d "$d" ]] || continue
+    uuid=$(basename "$d")
+    name=$(python3 -c "import json; print(json.load(open('$d/metadata.json')).get('name', '?'))" 2>/dev/null || echo '?')
+    state='no'
+    for e in "${enabled[@]}"; do [[ "$e" == "$uuid" ]] && state='yes'; done
+    printf '%-55s %-9s %s\n' "$uuid" "$state" "$name"
+  done
+  if [[ -d "$BACKUP_DIR" ]]; then
+    for d in "$BACKUP_DIR"/*/; do
+      [[ -d "$d" ]] || continue
+      printf '%-55s %-9s %s\n' "$(basename "$d")" 'removed' '(in backup)'
+    done
+  fi
+}
+
+cmd_on() {
+  local uuid=${1:?usage: osmium-extensions on UUID}
+  [[ -d "$EXT_DIR/$uuid" ]] || fail "not installed as system extension: $uuid (see 'restore' if removed)"
+  mapfile -t enabled < <(read_list)
+  for e in "${enabled[@]}"; do [[ "$e" == "$uuid" ]] && { echo "$uuid is already enabled"; return 0; }; done
+  write_list "${enabled[@]}" "$uuid"
+  echo "enabled: $uuid (takes effect on next login)"
+}
+
+cmd_off() {
+  local uuid=${1:?usage: osmium-extensions off UUID|all}
+  mapfile -t enabled < <(read_list)
+  if [[ "$uuid" == all ]]; then
+    write_list
+    echo 'all system extensions disabled (takes effect on next login)'
+    return 0
+  fi
+  local rest=()
+  for e in "${enabled[@]}"; do [[ "$e" == "$uuid" ]] || rest+=("$e"); done
+  [[ "${#rest[@]}" -lt "${#enabled[@]}" ]] || fail "not currently enabled: $uuid"
+  write_list "${rest[@]}"
+  echo "disabled: $uuid (files kept, takes effect on next login)"
+}
+
+cmd_remove() {
+  local uuid=${1:?usage: osmium-extensions remove UUID}
+  [[ -d "$EXT_DIR/$uuid" ]] || fail "not installed: $uuid"
+  install -d "$BACKUP_DIR"
+  mv "$EXT_DIR/$uuid" "$BACKUP_DIR/$uuid"
+  mapfile -t enabled < <(read_list)
+  local rest=()
+  for e in "${enabled[@]}"; do [[ "$e" == "$uuid" ]] || rest+=("$e"); done
+  write_list "${rest[@]}"
+  echo "removed: $uuid (files kept in $BACKUP_DIR/$uuid)"
+}
+
+cmd_restore() {
+  local uuid=${1:?usage: osmium-extensions restore UUID|all}
+  [[ -d "$BACKUP_DIR" ]] || fail 'backup dir is empty'
+  if [[ "$uuid" == all ]]; then
+    mapfile -t enabled < <(read_list)
+    for d in "$BACKUP_DIR"/*/; do
+      [[ -d "$d" ]] || continue
+      u=$(basename "$d")
+      mv "$d" "$EXT_DIR/$u"
+      enabled+=("$u")
+    done
+    write_list "${enabled[@]}"
+    echo 'restored all backed-up extensions and enabled them'
+    return 0
+  fi
+  [[ -d "$BACKUP_DIR/$uuid" ]] || fail "not in backup: $uuid"
+  mv "$BACKUP_DIR/$uuid" "$EXT_DIR/$uuid"
+  find "$EXT_DIR/$uuid" -type d -exec chmod 755 {} +
+  find "$EXT_DIR/$uuid" -type f -exec chmod 644 {} +
+  # DING-style subprocess launchers (shebang files) must stay executable
+  while IFS= read -r script; do chmod 755 "$script"; done < <(grep -rl -m1 '^#!' "$EXT_DIR/$uuid" 2>/dev/null | grep -v -E '/locale/|\.mo$' || true)
+  if [[ -d "$EXT_DIR/$uuid/schemas" ]] && ls "$EXT_DIR/$uuid/schemas/"*.gschema.xml >/dev/null 2>&1; then
+    glib-compile-schemas "$EXT_DIR/$uuid/schemas"
+  fi
+  mapfile -t enabled < <(read_list)
+  write_list "${enabled[@]}" "$uuid"
+  echo "restored and enabled: $uuid (takes effect on next login)"
+}
+
+case "${1:-}" in
+  list) cmd_list ;;
+  on) cmd_on "${2:-}" ;;
+  off) cmd_off "${2:-}" ;;
+  remove) cmd_remove "${2:-}" ;;
+  restore) cmd_restore "${2:-}" ;;
+  *) echo 'usage: osmium-extensions {list|on UUID|off UUID|all|remove UUID|restore UUID|all}'; exit 1 ;;
+esac

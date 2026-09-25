@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+
+<wallpapers>
+
+  <wallpaper>
+    <name>macOS Mojave</name>
+    <filename>/usr/share/backgrounds/osmium/mojave-day.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/osmium/mojave-night.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#20242b</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+
+  <wallpaper>
+    <name>macOS Catalina</name>
+    <filename>/usr/share/backgrounds/osmium/catalina-day.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/osmium/catalina-night.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#20242b</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+
+  <wallpaper>
+    <name>macOS Big Sur</name>
+    <filename>/usr/share/backgrounds/osmium/bigsur-day.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/osmium/bigsur-night.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#20242b</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+
+  <wallpaper>
+    <name>macOS Monterey</name>
+    <filename>/usr/share/backgrounds/osmium/monterey-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/osmium/monterey-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#20242b</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+
+  <wallpaper>
+    <name>macOS Sonoma</name>
+    <filename>/usr/share/backgrounds/osmium/sonoma-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/osmium/sonoma-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#20242b</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+
+  <wallpaper>
+    <name>macOS Sequoia</name>
+    <filename>/usr/share/backgrounds/osmium/sequoia-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/osmium/sequoia-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#20242b</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+
+  <wallpaper>
+    <name>macOS Tahoe — Beach</name>
+    <filename>/usr/share/backgrounds/osmium/tahoe-beach-day.png</filename>
+    <filename-dark>/usr/share/backgrounds/osmium/tahoe-beach-night.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#20242b</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+
+</wallpapers>
