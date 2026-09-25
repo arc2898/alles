@@ -1,10 +1,9 @@
-<<<<<<< HEAD
 # Osmiumos
 Osmium is a Linux based Operating System based on Debain 14
 this OS for mac theme users and using Gnome 50
 using custom Gnome extensions themes icons and cursor
-trying to make it best and close look to Mac OS mixture 
-=======
+trying to make it best and close look to Mac OS mixture
+-----
 # Osmium OS — source review bundle
 
 This directory is a reviewable source/build specification for the customized
@@ -14,7 +13,7 @@ Osmium OS live image. **No ISO has been built.**
 
 - **Base:** Debian Forky (`forky/sid`), matching the installed target
 - **Architecture:** `amd64` first
-- **Desktop:** full GNOME 50
+- **Desktop:** full GNOME 50.5
 - **Installer:** Calamares v3.4.3 source, with the Osmium overlay in
   `config/calamares/`
 - **Image tooling:** Debian live-build/live-boot/live-config
@@ -73,7 +72,7 @@ manifest. It does not build or install anything.
 
 ## Future ISO build
 
-`scripts/build-iso.sh` is guarded and refuses to run unless explicitly
+`scripts/build-iso.sh`
+is guarded and refuses to run unless explicitly
 enabled. Do not enable it until the source review is accepted and the Calamares
 package/VM test plan is confirmed.
->>>>>>> a083b1f4 (releasing full source)
