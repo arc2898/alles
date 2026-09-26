@@ -1,6 +1,0 @@
-# Optional external applications from the current installation.
-# These are intentionally not in config/package-lists because they require
-# third-party repositories or a locally built package. Add the corresponding
-# signed repository/key before enabling them in a live build.
-brave-browser
-ghostty

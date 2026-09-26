@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" role="img" aria-label="Osmium OS logo">
-  <circle cx="80" cy="80" r="64" fill="none" stroke="#67e8f9" stroke-width="14"/>
-  <circle cx="80" cy="80" r="48" fill="#818cf8" opacity="0.25"/>
-  <text x="80" y="102" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="54" font-weight="bold" fill="#f1f5f9">OS</text>
-  <text x="176" y="101" font-family="DejaVu Sans, sans-serif" font-size="62" font-weight="bold" fill="#f8fafc">Osmium OS</text>
-</svg>

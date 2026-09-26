@@ -1,5 +1,0 @@
-Task: ssh-server
-Section: server
-Test-server: 1
-Key:
-  task-ssh-server

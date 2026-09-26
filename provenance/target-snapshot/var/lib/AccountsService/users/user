@@ -1,5 +1,0 @@
-[User]
-Session=
-Icon=/var/lib/AccountsService/icons/user
-SystemAccount=false
-Face=/home/user/.face

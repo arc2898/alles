@@ -1,7 +1,0 @@
-Task: lxde-desktop
-Relevance: 7
-Parent: desktop
-Test-default-desktop: 3 lxde
-Section: user
-Key:
-  task-lxde-desktop

@@ -1,8 +1,0 @@
-Osmium OS
-==========
-
-A GNOME 50 desktop built from Debian Forky.
-
-The system-wide desktop assets are provided by the vinceliuice MacTahoe and
-grub2-themes projects. The original Debian package identity and rollback data
-are retained in the installation backup.

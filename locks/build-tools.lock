@@ -1,5 +1,0 @@
-# Build-tool pins observed in the active Forky archive
-live-build\t1:20250814
-live-boot\t1:20250815
-live-config\t11.0.5
-calamares\t3.4.3 (upstream source; local package not built)

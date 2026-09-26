@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="OsmiumOS">
-  <rect width="512" height="512" rx="96" fill="#1f2933"/>
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#d6a84f" stroke-width="18"/>
-  <ellipse cx="256" cy="256" rx="190" ry="72" fill="none" stroke="#f0c86e" stroke-width="12" transform="rotate(30 256 256)"/>
-  <ellipse cx="256" cy="256" rx="190" ry="72" fill="none" stroke="#f0c86e" stroke-width="12" transform="rotate(-30 256 256)"/>
-  <circle cx="256" cy="256" r="34" fill="#d6a84f"/>
-</svg>
