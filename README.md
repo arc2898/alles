@@ -1,6 +1,6 @@
-# Osmium OS
+# Osmium
 
-Osmium OS is a Debian 14 (Forky)-based Linux distribution focused on a macOS-inspired desktop experience, using GNOME and custom themes, icons, cursors, and extensions.
+Osmium is a Debian 14 (Forky)-based Linux distribution focused on a macOS-inspired desktop experience, with GNOME and custom themes, icons, cursors, and extensions.
 
 ## Build the Debian base
 
@@ -23,16 +23,26 @@ Defaults: suite `forky`, architecture `amd64`, and output directory `out/osmium-
 
 ## Install GNOME 50.2 and GDM3
 
-After the base bootstrap completes, install the GNOME desktop and display manager:
+After the base bootstrap completes:
 
 ```bash
 sudo ./scripts/install-desktop.sh
 ```
 
-The script uses a dated Debian snapshot (default `20260615T000000Z`) to request `gnome-shell 50.2-3` and `gdm3 50.2-1` together with GNOME Session, Control Center, Terminal, and NetworkManager. You can override `ROOTFS`, `SNAPSHOT`, `GNOME_SHELL_VERSION`, and `GDM3_VERSION`. A snapshot keeps package dependencies consistent; the exact versions must exist in that snapshot.
+The script requests `gnome-shell 50.2-3` and `gdm3 50.2-1` from the configured Debian snapshot, along with GNOME Session, Control Center, Terminal, and NetworkManager. You can override `ROOTFS`, `SNAPSHOT`, `GNOME_SHELL_VERSION`, and `GDM3_VERSION`. Package versions must exist in the selected snapshot.
 
-This installs the desktop into the root filesystem; it does **not** create a bootable ISO. Next steps are adding Osmium themes/icons/extensions, integrating Calamares, and building/testing an installer image.
+## Apply Osmium branding
 
-## Project status
+Apply the OS identity, hostname, login banner, MOTD, and root Bash prompt:
 
-The project is under development. Desktop customizations, self-built GNOME extensions, installer integration, and background assets still need work.
+```bash
+sudo ./scripts/brand-osmium.sh
+```
+
+Defaults: OS name `Osmium`, version `0.1.0`, codename `forky`, hostname `osmium`. Customize with `ROOTFS`, `OS_VERSION`, `CODENAME`, and `HOSTNAME_VALUE`.
+
+The branding script does not enable root auto-login or remote root access. It updates the target root filesystem, not the build host.
+
+## Status
+
+These scripts prepare a root filesystem; they do **not** produce a bootable ISO yet. Next: add the Osmium theme/icon assets and GNOME defaults, integrate Calamares, then build and test an installer image.
