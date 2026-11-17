@@ -1,8 +1,8 @@
 # ALLES
 
-A native Linux desktop assistant (an Electron app). It looks at the screen, moves the mouse, types, runs
-commands and edits files for you, and shows what it is doing in a small auto-hiding "island" on a screen
-edge. GNOME first; KDE Plasma should work too (not yet tried).
+**ALLES** is a native Linux desktop assistant — an Electron app that sees your screen, controls the mouse and keyboard, runs commands, and edits files on your behalf. It lives as a small auto-hiding "island" on the edge of your screen, showing status, activity, and a prompt box. GNOME is the primary target; KDE Plasma should work too (not yet tried).
+
+Think of it as an AI agent that can *actually use your computer*: it takes screenshots, decides what to click or type, runs shell commands, edits code, and reports back — all while you watch in the island or the full window (Chat, Code, History, Voice).
 
 **This is a work in progress. Read "Status" before relying on anything.**
 
