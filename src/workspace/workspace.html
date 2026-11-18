@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<!-- Nothing but our own script and stylesheet may load or run: no inline script, no network, no frames, no forms. -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:; media-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none';" />
+<meta name="color-scheme" content="dark light" />
+<title>ALLES</title>
+<link rel="stylesheet" href="workspace.css" />
+</head>
+<body>
+<noscript>ALLES needs JavaScript, which is switched off in this window.</noscript>
+<div class="app">
+  <nav class="rail" aria-label="ALLES">
+    <div class="brand">ALLES</div>
+    <div id="tabs" role="tablist" aria-orientation="vertical"></div>
+    <div class="rail-foot" id="rail-note"></div>
+  </nav>
+
+  <main>
+    <!-- ================= Chat ================= -->
+    <section id="page-chat" class="page" role="tabpanel" aria-labelledby="tab-chat">
+      <header class="page-head">
+        <h1>Chat</h1>
+        <div class="head-actions">
+          <label class="toggle" title="ALLES reads its answers aloud"><input type="checkbox" id="chat-speak" /> <span>Read answers aloud</span></label>
+          <label class="toggle" title="After ALLES has spoken, it listens again by itself"><input type="checkbox" id="chat-handsfree" /> <span>Hands-free</span></label>
+          <button id="chat-new" class="btn" type="button">New chat</button>
+        </div>
+      </header>
+      <div id="chat-log" class="log" role="log" aria-live="polite" aria-label="Conversation" tabindex="0"></div>
+      <div id="chat-empty" class="empty">Ask anything. Press the microphone to talk instead of typing.<br />For tasks on your computer, use the pill at the edge of the screen; to write code, use the Code page.</div>
+      <div id="voice-status" class="voice-status" role="status" aria-live="polite"></div>
+      <div class="composer">
+        <textarea id="chat-input" rows="2" maxlength="8000" placeholder="Write to ALLES…" aria-label="Message to ALLES"></textarea>
+        <div class="composer-buttons">
+          <button id="chat-mic" class="btn mic" type="button" aria-pressed="false" title="Talk to ALLES">Talk</button>
+          <button id="chat-stop" class="btn" type="button" hidden>Stop</button>
+          <button id="chat-send" class="btn primary" type="button">Send</button>
+        </div>
+      </div>
+      <div class="meter" id="mic-meter" hidden><div id="mic-level"></div></div>
+    </section>
+
+    <!-- ================= Code ================= -->
+    <section id="page-code" class="page" role="tabpanel" aria-labelledby="tab-code" hidden>
+      <header class="page-head">
+        <h1>Code</h1>
+        <div class="head-actions">
+          <span id="code-project" class="project-name">No project chosen</span>
+          <button id="code-pick" class="btn" type="button">Choose folder…</button>
+        </div>
+      </header>
+      <div class="autonomy">
+        <label for="code-autonomy">When ALLES codes by itself:</label>
+        <select id="code-autonomy"></select>
+        <span id="code-autonomy-note" class="note"></span>
+      </div>
+      <div class="code-grid">
+        <aside class="code-side">
+          <h2>Changes <button id="code-undo-all" class="link" type="button" hidden>Undo all</button></h2>
+          <ul id="code-changes" class="list" aria-label="Files ALLES changed"></ul>
+          <p id="code-changes-empty" class="note">Nothing changed yet. Changes made by commands (for example an install) are not listed here.</p>
+          <h2>Files</h2>
+          <ul id="code-tree" class="list tree" aria-label="Project files"></ul>
+        </aside>
+        <div class="code-main">
+          <section class="editor-panel" aria-label="Project file editor">
+            <div class="editor-toolbar">
+              <div class="editor-file">
+                <span id="code-editor-dot" class="editor-dot" aria-hidden="true"></span>
+                <strong id="code-file-label">No file open</strong>
+                <span id="code-file-state" class="editor-state">Choose a file from the project tree</span>
+              </div>
+              <div class="editor-actions">
+                <button id="code-reload" class="btn" type="button" disabled>Reload</button>
+                <button id="code-save" class="btn primary" type="button" disabled>Save file</button>
+              </div>
+            </div>
+            <textarea id="code-editor" class="code-editor" rows="12" maxlength="2097152" spellcheck="false" disabled placeholder="Choose a text file from the project tree to edit it here." aria-label="Project file contents"></textarea>
+            <div class="editor-footer"><span id="editor-status">Files are saved only inside the selected project.</span><span>Ctrl+S to save</span></div>
+          </section>
+          <pre id="code-diff" class="diff" hidden></pre>
+          <div id="code-log" class="log code-log" role="log" aria-live="polite" aria-label="What ALLES is doing" tabindex="0"></div>
+          <div id="code-empty" class="empty">Choose a project folder, open a file to edit it, or describe a change for ALLES to make. The agent can inspect the project, update files, run checks and report its work. Both manual and agent edits appear in Changes and can be undone.</div>
+          <div class="composer code-composer">
+            <textarea id="code-input" rows="2" maxlength="12000" placeholder="Ask ALLES to build, fix, test or explain this project…" aria-label="What should ALLES do in this project?"></textarea>
+            <div class="composer-buttons">
+              <button id="code-mic" class="btn mic" type="button" aria-pressed="false" title="Dictate a coding task">Dictate</button>
+              <button id="code-stop" class="btn" type="button" hidden>Stop</button>
+              <button id="code-run" class="btn primary" type="button">Run task</button>
+            </div>
+          </div>
+          <div class="code-voice-row"><span id="code-voice-status" class="voice-status" role="status" aria-live="polite"></span><div class="meter" id="code-mic-meter" hidden><div id="code-mic-level"></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= History ================= -->
+    <section id="page-history" class="page" role="tabpanel" aria-labelledby="tab-history" hidden>
+      <header class="page-head">
+        <h1>History</h1>
+        <div class="head-actions">
+          <input id="hist-search" type="search" placeholder="Search everything said…" aria-label="Search history" />
+          <select id="hist-kind" aria-label="Show"><option value="">All</option><option value="chat">Chats</option><option value="code">Code</option><option value="task">Pill tasks</option></select>
+        </div>
+      </header>
+      <div class="hist-grid">
+        <div id="hist-list" class="hist-list" role="listbox" aria-label="Conversations"></div>
+        <div class="hist-view">
+          <div id="hist-actions" class="hist-actions" hidden>
+            <button id="hist-continue" class="btn primary" type="button">Continue this chat</button>
+            <button id="hist-rename" class="btn" type="button">Rename</button>
+            <button id="hist-export" class="btn" type="button">Save as file…</button>
+            <button id="hist-delete" class="btn danger" type="button">Delete</button>
+          </div>
+          <div id="hist-title" class="hist-title"></div>
+          <div id="hist-body" class="log" aria-label="Conversation" tabindex="0"></div>
+          <div id="hist-empty" class="empty">Your conversations with ALLES in this window, and your tasks from the pill, are kept here on this computer. Pick one to read it.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Voice & privacy ================= -->
+    <section id="page-voice" class="page" role="tabpanel" aria-labelledby="tab-voice" hidden>
+      <header class="page-head"><h1>Voice &amp; privacy</h1></header>
+      <div class="cards">
+        <section class="card">
+          <h2>ALLES talks</h2>
+          <p id="voice-talk" class="note"></p>
+          <div class="row"><label for="tts-engine">Engine</label>
+            <select id="tts-engine"><option value="auto">Automatic</option><option value="piper">Piper (natural voices)</option><option value="espeak-ng">eSpeak NG</option><option value="spd-say">Desktop speech service</option><option value="browser">This window's built-in voices</option><option value="off">Off</option></select></div>
+          <div class="row"><label for="tts-voice">Voice name</label><input id="tts-voice" type="text" maxlength="80" placeholder="optional, for example en-us+f3" /></div>
+          <div class="row"><label for="tts-rate">Speed</label><input id="tts-rate" type="range" min="0.5" max="2" step="0.1" /><output id="tts-rate-out"></output></div>
+          <div class="row"><label for="tts-piper">Piper voice file</label><input id="tts-piper" type="text" maxlength="500" placeholder="/path/to/voice.onnx" /></div>
+          <div class="row"><span></span><button id="tts-test" class="btn" type="button">Test the voice</button></div>
+        </section>
+        <section class="card">
+          <h2>You talk</h2>
+          <p id="voice-listen" class="note"></p>
+          <p id="voice-privacy" class="note strong"></p>
+          <div class="row"><label for="stt-engine">Engine</label>
+            <select id="stt-engine"><option value="auto">Automatic (private first)</option><option value="whisper-cli">whisper.cpp on this computer</option><option value="http">A transcription provider</option><option value="off">Off</option></select></div>
+          <div class="row"><label for="stt-model-file">Whisper model file</label><input id="stt-model-file" type="text" maxlength="500" placeholder="/path/to/ggml-base.bin" /></div>
+          <div class="row"><label for="stt-binary">Whisper program</label><input id="stt-binary" type="text" maxlength="500" placeholder="whisper-cli (found automatically)" /></div>
+          <div class="row"><label for="stt-route">Provider</label><select id="stt-route"></select></div>
+          <div class="row"><label for="stt-model">Provider model</label><input id="stt-model" type="text" maxlength="200" placeholder="whisper-1" /></div>
+          <div class="row"><label for="stt-lang">Language</label><input id="stt-lang" type="text" maxlength="12" placeholder="automatic, or en, hi, de…" /></div>
+          <div class="row"><span></span><button id="mic-test" class="btn" type="button">Test the microphone</button></div>
+        </section>
+        <section class="card">
+          <h2>What ALLES remembers</h2>
+          <p class="note">Conversations and coding sessions are saved only on this computer, with API keys removed. Turning this off stops saving new ones; it does not delete what is saved.</p>
+          <div class="row"><label for="hist-enabled">Remember conversations</label><input id="hist-enabled" type="checkbox" /></div>
+          <div class="row"><span></span><button id="hist-clear" class="btn danger" type="button">Delete all history…</button></div>
+          <p id="hist-issue" class="note" hidden></p>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- A question from ALLES that needs a yes or no (the same questions the pill asks). -->
+<div id="approval" class="approval" role="alertdialog" aria-modal="false" aria-labelledby="ap-title" aria-describedby="ap-body" hidden>
+  <h2 id="ap-title"></h2>
+  <div id="ap-target" class="ap-target"></div>
+  <pre id="ap-body" class="ap-body"></pre>
+  <ul id="ap-risks" class="ap-risks"></ul>
+  <div class="ap-buttons"><button id="ap-deny" class="btn" type="button"></button><button id="ap-allow" class="btn primary" type="button"></button></div>
+</div>
+<div id="confirm" class="approval" role="alertdialog" aria-modal="false" aria-labelledby="cf-text" hidden>
+  <p id="cf-text"></p>
+  <div class="ap-buttons"><button id="cf-no" class="btn" type="button">Cancel</button><button id="cf-yes" class="btn danger" type="button">Delete</button></div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="voice-model.js"></script>
+<script src="workspace-model.js"></script>
+<script src="workspace.js"></script>
+</body>
+</html>

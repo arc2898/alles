@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; img-src data:;" />
+<title>ALLES</title>
+<style>
+  :root {
+    /* One accent per state, so the pill is readable at a glance. */
+    --c-idle:     #7c8aa5;
+    --c-thinking: #6aa9ff;
+    --c-acting:   #ffb454;
+    --c-waiting:  #ff6b81;
+    --c-done:     #5ee6a8;
+    --c-error:    #ff5c5c;
+    --c-stopped:  #a0a4ad;
+    --accent: var(--c-idle);
+    --pill-bg: rgba(18, 20, 26, 0.92);
+    --text: #eef1f7;
+    --muted: #9aa3b5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: transparent;          /* the BrowserWindow is transparent */
+    overflow: hidden;
+    font: 13px/1.35 system-ui, -apple-system, "Segoe UI", "Noto Sans", sans-serif;
+    color: var(--text);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ---- the liquid body -------------------------------------------------
+     The gooey trick: blur a group of shapes, then crank alpha contrast so the
+     blurred edges snap back to a hard edge. Where two shapes are close, their
+     blur overlaps and they visually MERGE like liquid, then split apart again.
+     It is a small element, so this stays cheap on integrated graphics. */
+  /* The window is BIGGER than the visible pill by the --in-* insets. That
+     transparent margin is where the goo blur and droplets are allowed to
+     paint; without it they get clipped by the window edge. */
+  /* Per-side insets are set by the dock (pill:phase -> pill.js) because the
+     padding is asymmetric: only `gap` toward the docked edge, full room on the
+     side the droplets bulge toward. Defaults match a top-docked peek. */
+  :root { --in-t: 6px; --in-r: 20px; --in-b: 20px; --in-l: 20px; }
+  #stage { position: absolute; top: var(--in-t); right: var(--in-r); bottom: var(--in-b); left: var(--in-l); }
+  #liquid { position: absolute; inset: 0; filter: url(#goo); }
+  .blob {
+    position: absolute;
+    background: var(--pill-bg);
+    border-radius: 999px;
+    transition: transform .55s cubic-bezier(.34, 1.56, .64, 1),
+                width .45s cubic-bezier(.34, 1.56, .64, 1),
+                height .45s cubic-bezier(.34, 1.56, .64, 1),
+                left .45s cubic-bezier(.34, 1.56, .64, 1),
+                top .45s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  /* main body */
+  #body { left: 0; top: 0; right: 0; bottom: 0; border-radius: 999px; transition: border-radius .4s ease, transform .3s ease; }
+  body.expanded #body,
+  body.island   #body { border-radius: 26px; }   /* island shape follows the PHASE, not just having reply text */
+
+  /* Droplets orbit OUT past the body edge and fall back in. Because the whole
+     #liquid layer is run through the goo filter, a droplet that overlaps the
+     body's edge bulges it, then pinches off and merges back like liquid.
+     They travel beyond the body (top/bottom/sides) - if they stayed inside a
+     same-coloured body they would be invisible, which is the bug this fixes. */
+  .drop { width: 15px; height: 15px; top: 50%; left: 50%; margin: -7px 0 0 -7px; opacity: 0; transition: opacity .3s; }
+  body[data-state="thinking"] .drop,
+  body[data-state="acting"]   .drop { opacity: 1; }
+  #d1 { animation: bob1 2.4s ease-in-out infinite; }
+  #d2 { animation: bob2 2.9s ease-in-out infinite; width: 11px; height: 11px; margin: -5px 0 0 -5px; }
+  #d3 { animation: bob3 2.1s ease-in-out infinite; width: 13px; height: 13px; margin: -6px 0 0 -6px; }
+  /* x spans +-(half body width) so droplets meet the rounded ends; y pokes above/below */
+  @keyframes bob1 { 0%,100% { transform: translate(-70px,  2px) scale(.7); } 50% { transform: translate(-40px, -22px) scale(1.25); } }
+  @keyframes bob2 { 0%,100% { transform: translate( 72px, -2px) scale(.6); } 50% { transform: translate( 42px,  22px) scale(1.2);  } }
+  @keyframes bob3 { 0%,100% { transform: translate(  4px, 20px) scale(.5); } 50% { transform: translate( -6px, -21px) scale(1.15); } }
+
+  /* the body itself breathes, so even with no droplets the edge is alive */
+  body[data-state="thinking"] #body,
+  body[data-state="acting"]   #body { animation: breathe 2.2s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { transform: scale(1, 1); } 50% { transform: scale(1.025, 1.09); } }
+
+  /* ---- content sits ABOVE the goo layer so text is never blurred ------- */
+  #content {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    padding: 0 16px;
+  }
+  #row { display: flex; align-items: center; gap: 10px; height: 34px; flex: none; }
+
+  #dot {
+    width: 10px; height: 10px; border-radius: 50%; flex: none;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 var(--accent);
+    transition: background .3s;
+  }
+  body[data-state="thinking"] #dot { animation: pulse 1.4s ease-out infinite; }
+  body[data-state="acting"]   #dot { animation: pulse .8s ease-out infinite; }
+  body[data-state="waiting"]  #dot { animation: pulse 1s ease-out infinite; }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); }
+    100% { box-shadow: 0 0 0 9px transparent; }
+  }
+
+  #label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+  #clock { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+
+  #reply {
+    display: none; flex: 1; min-height: 0;
+    margin-top: 2px; padding: 4px 2px 12px;
+    color: #dfe4ee; overflow: hidden;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4;
+    opacity: 0; transition: opacity .25s .1s;
+  }
+  body.expanded #reply { opacity: 1; }
+
+  /* ---- hover / press -------------------------------------------------- */
+  body.hover  #body { animation: none; transform: scale(1.03); }
+  body.pressed #body { animation: none; transform: scale(.94); }
+  body.pressed #content { transform: scale(.97); }
+  #content { transition: transform .2s ease; }
+
+  /* ---- phases (set by the dock via data-phase) -------------------------
+     hidden : a 3px strip. Show only a faint accent line; hide the content.
+     peek   : the compact pill.
+     island : the expanded liquid island with the reply area.            */
+  body[data-phase="hidden"] { --in-t: 0px; --in-r: 0px; --in-b: 0px; --in-l: 0px; }
+  body[data-phase="hidden"] #content,
+  body[data-phase="hidden"] .drop { opacity: 0; }
+  body[data-phase="hidden"] #body { border-radius: 3px; background: var(--accent); opacity: .55; }
+
+  #content { transition: opacity .2s ease, transform .2s ease; }
+  /* island: header row on top, reply below, both vertically balanced */
+  body.island #row { height: 34px; margin-top: 8px; }
+  #activity { display: none; list-style: none; padding: 2px 2px 12px; margin: 0; font-size: 12px; color: var(--muted); }
+  body.island #activity { display: block; }
+  /* while a reply is showing, the log stays out of the way */
+  body.expanded #activity { display: none; }
+  #activity li { display: flex; align-items: center; gap: 8px; height: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .55; }
+  #activity li:last-child { opacity: 1; color: var(--text); }
+  #activity li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; flex: none; background: currentColor; }
+  #activity li.err::before { background: var(--c-error); }
+  body.island #reply { margin-top: 4px; }
+
+  /* island controls: only shown in the island, never in the compact pill or hidden strip */
+  #controls { display: none; gap: 2px; flex: none; margin-left: 4px; }
+  body.island #controls { display: flex; }
+  #controls button {
+    all: unset; box-sizing: border-box; width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center; cursor: pointer; color: var(--muted); font-size: 13px; line-height: 1;
+    transition: background .15s, color .15s;
+  }
+  #controls button:hover, #controls button:focus-visible { background: rgba(255,255,255,.12); color: var(--text); }
+  #controls button:active { background: rgba(255,255,255,.2); }
+  #btn-quit:hover { color: var(--c-error); }
+  /* Stop is only meaningful while the agent is working. */
+  #btn-stop { display: none !important; }
+  body[data-state="thinking"] #btn-stop, body[data-state="acting"] #btn-stop, body[data-state="waiting"] #btn-stop { display: grid !important; }
+  #btn-stop:hover { color: var(--c-waiting); }
+
+  /* drag affordance: open hand on hover, closed hand while dragging, pill lifts slightly */
+  body.peek, body[data-phase="peek"], body[data-phase="island"] { cursor: grab; }
+  body.dragging, body.dragging * { cursor: grabbing !important; }
+  body.dragging #body { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,.35); animation: none; }
+  body.dragging #content { transition: none; }
+
+
+  /* ---- natural-height wrapper (measured by pill.js) -------------------------------- */
+  #natural { display: flow-root; }
+
+  /* ---- prompt box: shown only in the island, when idle / finished ----------------- */
+  #promptbar { display: none; gap: 8px; align-items: center; margin: 6px 0 12px; }
+  body.prompting #promptbar { display: flex; }
+  #prompt {
+    flex: 1; min-width: 0; height: 32px; box-sizing: border-box; padding: 0 14px; border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--text);
+    font: inherit; outline: none; user-select: text; -webkit-user-select: text; cursor: text;
+  }
+  #prompt::placeholder { color: var(--muted); }
+  #prompt:focus { border-color: var(--accent); background: rgba(255,255,255,.1); }
+  #btn-send {
+    all: unset; box-sizing: border-box; width: 32px; height: 32px; border-radius: 50%; flex: none;
+    display: grid; place-items: center; cursor: pointer; background: var(--accent); color: #0b0d12; font-size: 15px; font-weight: 700;
+  }
+  #btn-send:hover, #btn-send:focus-visible { filter: brightness(1.12); }
+
+  /* ---- approval question ------------------------------------------------------------- */
+  #approval { display: none; margin: 6px 0 12px; }
+  body.approving #approval { display: block; }
+  /* while a question is open, nothing else competes for the space (and the truncated status text is never shown) */
+  body.approving #reply, body.approving #activity { display: none !important; }
+  #ap-title { font-weight: 600; margin-bottom: 4px; }
+  #ap-target { font: 11px/1.3 ui-monospace, "DejaVu Sans Mono", monospace; color: var(--muted); margin-bottom: 5px; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; }
+  #ap-target:empty { display: none; }
+  #ap-body {
+    margin: 0; padding: 8px 10px; max-height: 190px; overflow: auto; border-radius: 10px;
+    background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1);
+    font: 12px/1.45 ui-monospace, "DejaVu Sans Mono", monospace; color: #e8ecf5;
+    white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; cursor: text;
+  }
+  #ap-body:empty { display: none; }
+  #ap-note { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  #ap-note:empty { display: none; }
+  #ap-hint { color: #ffd479; font-size: 11.5px; margin-top: 5px; }
+  #ap-hint:empty { display: none; }
+  #ap-risks { list-style: none; margin: 6px 0 0; padding: 0; font-size: 12px; color: #ffb4b4; }
+  #ap-risks:empty { display: none; }
+  #ap-risks li::before { content: "\26A0\FE0E "; }
+  #ap-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+  #ap-buttons button {
+    all: unset; box-sizing: border-box; height: 30px; padding: 0 18px; border-radius: 15px; cursor: pointer;
+    display: grid; place-items: center; font-weight: 600; transition: filter .15s, opacity .15s;
+  }
+  #btn-deny { background: rgba(255,255,255,.14); color: var(--text); }
+  #btn-allow { background: var(--c-done); color: #06231a; }
+  #ap-buttons button:hover:not(:disabled), #ap-buttons button:focus-visible { filter: brightness(1.15); }
+  #ap-buttons button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  #ap-buttons button:disabled { opacity: .35; cursor: not-allowed; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drop, #dot { animation: none !important; }
+    .blob { transition: none; }
+  }
+</style>
+</head>
+<body data-state="idle">
+  <!-- SVG filter lives outside the visible tree; applied via CSS filter:url(#goo). -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="goo" x="-30%" y="-150%" width="160%" height="400%" color-interpolation-filters="sRGB">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+        <!-- alpha row: multiply alpha by 20, subtract 8 -> hard edge from the blur -->
+        <feColorMatrix in="blur" mode="matrix"
+          values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" result="goo" />
+        <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div id="stage">
+  <div id="liquid">
+    <div class="blob" id="body"></div>
+    <div class="blob drop" id="d1"></div>
+    <div class="blob drop" id="d2"></div>
+    <div class="blob drop" id="d3"></div>
+  </div>
+
+  <div id="content">
+    <!-- #natural holds everything at its NATURAL height, so the page can measure how tall it wants the island
+         (a container that is taller than its content always reports its own height, which would loop). -->
+    <div id="natural">
+    <div id="row">
+      <span id="dot"></span>
+      <span id="label">Idle</span>
+      <span id="clock">--:--</span>
+      <span id="controls">
+        <button id="btn-stop" type="button" title="Stop the current task" aria-label="Stop">&#9209;</button>
+        <button id="btn-workspace" type="button" title="Open the workspace: Chat, Code, History, Voice" aria-label="Open the workspace">&#9638;</button>
+        <button id="btn-settings" type="button" title="Settings" aria-label="Settings">&#9881;</button>
+        <button id="btn-quit" type="button" title="Quit" aria-label="Quit">&#10005;</button>
+      </span>
+    </div>
+    <div id="reply"></div>
+    <ul id="activity"></ul>
+
+    <!-- The approval question. Every value is set with textContent (it comes from the model), and the body is
+         shown IN FULL, scrollable - never clamped, because a clamped command can hide its dangerous part. -->
+    <div id="approval" role="alertdialog" aria-labelledby="ap-title">
+      <div id="ap-title"></div>
+      <div id="ap-target"></div>
+      <pre id="ap-body" tabindex="0"></pre>
+      <div id="ap-note"></div>
+      <div id="ap-hint" aria-live="polite"></div>
+      <ul id="ap-risks"></ul>
+      <div id="ap-buttons">
+        <button id="btn-deny" type="button">Deny</button>
+        <button id="btn-allow" type="button">Allow</button>
+      </div>
+    </div>
+
+    <div id="promptbar">
+      <input id="prompt" type="text" maxlength="4000" autocomplete="off" spellcheck="false" aria-label="Ask ALLES" placeholder="Ask ALLES to do something&hellip;" />
+      <button id="btn-send" type="button" title="Send" aria-label="Send">&#8629;</button>
+    </div>
+    </div><!-- /#natural -->
+  </div>
+  </div><!-- /#stage -->
+
+  <!-- pill-model.js MUST load first: pill.js reads window.PillModel at startup. -->
+  <script src="pill-model.js"></script>
+  <script src="pill.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "alles",
+  "version": "0.3.0",
+  "private": true,
+  "description": "ALLES - agentic AI desktop assistant for Linux with a persistent draggable island",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test \"test/**/*.test.js\"",
+    "setup": "bash install.sh",
+    "uninstall-app": "bash install.sh --uninstall",
+    "dist": "npx --yes electron-builder@26.18.1 --linux"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "dbus-next": "^0.10.2"
+  },
+  "devDependencies": {
+    "electron": "45.2.1"
+  },
+  "license": "MIT",
+  "allowScripts": {
+    "electron@45.2.1": true,
+    "usocket@0.3.0": true
+  }
+}

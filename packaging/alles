@@ -1,0 +1,53 @@
+#!/bin/sh
+# alles - starts ALLES, or, when it is already running, opens/closes its island (so this is the command a keyboard
+# shortcut should run). Installed by install.sh; safe to run by hand from a checkout too.
+#
+# Settings for this launcher live in ${XDG_CONFIG_HOME:-~/.config}/alles/launcher.conf (plain shell, optional):
+#   ALLES_FLAGS                       optional extra Electron flags (do not disable Chromium sandboxing)
+#   ALLES_NO_X11=1                 do not force X11 on a Wayland desktop (the pill then cannot be placed exactly)
+#   ALLES_HOME=/some/dir           where the app lives (the installer writes this only for a non-default --prefix)
+
+conf=${XDG_CONFIG_HOME:-$HOME/.config}/alles/launcher.conf
+# shellcheck disable=SC1090
+[ -r "$conf" ] && . "$conf"
+
+# Any flag that switches a Chromium sandbox off is refused, in the settings AND on the command line.
+set -f
+for w in ${ALLES_FLAGS:-} "$@"; do
+  case "$w" in
+    --no-sandbox*|--disable-*sandbox*)
+      echo "alles: refusing $w; fix the Electron chrome-sandbox helper with chown root:root and chmod 4755 instead." >&2
+      exit 1
+      ;;
+  esac
+done
+set +f
+
+here=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
+if [ -n "${ALLES_HOME:-}" ]; then app=$ALLES_HOME
+elif [ -f "$here/../package.json" ] && [ -d "$here/../src" ]; then app=$(cd "$here/.." && pwd)    # run from a checkout
+else app=${XDG_DATA_HOME:-$HOME/.local/share}/alles; fi
+
+# Which Electron: the one installed with the app, else one on PATH (the app uses the locked Electron version).
+electron=$app/node_modules/electron/dist/electron
+if [ ! -x "$electron" ]; then
+  electron=$(command -v electron 2>/dev/null) || {
+    echo "alles: Electron was not found in $app/node_modules. Run install.sh again." >&2
+    exit 1
+  }
+fi
+
+# Wayland desktops: run through XWayland so the pill can sit exactly on a screen edge (see src/main/platform.js).
+# Early in a login the session variables may not have reached us yet, so ask systemd for DISPLAY once.
+if [ -n "${WAYLAND_DISPLAY:-}" ] && [ -z "${DISPLAY:-}" ] && command -v systemctl >/dev/null 2>&1; then
+  d=$(systemctl --user show-environment 2>/dev/null | sed -n 's/^DISPLAY=//p' | head -n 1)
+  [ -n "$d" ] && DISPLAY=$d && export DISPLAY
+fi
+flags=""
+case " $* " in
+  *" --ozone-platform"*) ;;                                                        # the person chose; leave it
+  *) if [ -z "${ALLES_NO_X11:-}" ] && [ -n "${WAYLAND_DISPLAY:-}" ] && [ -n "${DISPLAY:-}" ]; then flags="--ozone-platform=x11"; fi ;;
+esac
+
+# shellcheck disable=SC2086   # flags are deliberately split
+exec "$electron" $flags ${ALLES_FLAGS:-} "$app" "$@"

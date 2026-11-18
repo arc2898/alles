@@ -1,0 +1,1 @@
+{ "name": "alles-topbar", "private": true, "type": "module", "description": "The ALLES GNOME Shell extension. This file only tells Node (for the tests) that these files are ES modules; GNOME Shell ignores it." }

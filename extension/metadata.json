@@ -1,0 +1,7 @@
+{
+  "uuid": "alles@alles.app",
+  "name": "ALLES",
+  "description": "The ALLES assistant in the top bar: ask by typing or by voice, see what it is doing, answer its questions, watch CPU, memory, disk and network, keep things on a shelf. Needs the ALLES app for the assistant; the widgets and the shelf work without it.",
+  "shell-version": ["45", "46", "47", "48"],
+  "version": 1
+}

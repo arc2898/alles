@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<!-- Nothing but our own script and stylesheet may load or run: no inline script, no network, no frames, no forms. -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:; base-uri 'none'; form-action 'none';" />
+<meta name="color-scheme" content="dark light" />
+<title>ALLES Settings</title>
+<link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+  <div class="app">
+    <nav id="rail" class="rail" aria-label="Settings sections"></nav>
+    <main id="main" class="main" tabindex="-1"></main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <noscript>Settings needs JavaScript, which is switched off in this window.</noscript>
+  <script src="settings-model.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

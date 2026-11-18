@@ -1,0 +1,45 @@
+/* ALLES in the GNOME top bar. Shell CSS is a small subset of web CSS: spacing, colours, radii and sizes only. Colours that the person
+   chooses are applied from code (validated #rrggbb values), these are only the defaults and the shapes. */
+
+.alles-bar { spacing: 6px; padding: 0 4px; }
+.alles-orb { width: 10px; height: 10px; border-radius: 5px; background-color: #7c8aa5; }
+.alles-armed { width: 4px; height: 4px; border-radius: 2px; background-color: #ff8fa3; margin-left: -3px; margin-top: -7px; }
+.alles-label { font-weight: bold; }
+.alles-widgets { spacing: 10px; margin-left: 4px; }
+.alles-widget { font-size: 0.92em; }
+.alles-tone-warn { color: #ffb454; }
+.alles-tone-crit { color: #ff6b81; }
+.alles-compact .alles-widgets { spacing: 6px; }
+
+.alles-menu { min-width: 360px; max-width: 460px; }
+.alles-section { spacing: 6px; padding: 4px 2px; }
+.alles-section-title { font-size: 0.8em; font-weight: bold; color: #97a1b5; text-transform: uppercase; }
+.alles-status { font-weight: bold; font-size: 1.05em; }
+.alles-reply { color: #c8cedb; }
+.alles-note { font-size: 0.85em; color: #97a1b5; }
+.alles-row { spacing: 6px; }
+
+.alles-button { padding: 4px 10px; border-radius: 8px; }
+.alles-primary { background-color: #6aa9ff; color: #0a1020; font-weight: bold; }
+.alles-primary:hover { background-color: #8dbbff; }
+.alles-danger { color: #ff6b81; }
+.alles-icon { padding: 2px 8px; }
+.alles-mic { padding: 4px 8px; }
+.alles-entry { padding: 5px 8px; border-radius: 8px; min-width: 200px; }
+
+.alles-ap-title { font-weight: bold; color: #ffb454; }
+.alles-ap-target { font-size: 0.85em; color: #97a1b5; }
+.alles-ap-body { font-family: monospace; font-size: 0.85em; padding: 6px; border-radius: 6px; background-color: rgba(0, 0, 0, 0.25); }
+.alles-ap-risks { color: #ff6b81; font-size: 0.9em; }
+
+.alles-res-row { spacing: 8px; }
+.alles-res-title { color: #c8cedb; }
+.alles-res-value { font-size: 0.92em; }
+.alles-track { height: 6px; border-radius: 3px; background-color: rgba(255, 255, 255, 0.12); }
+.alles-fill { height: 6px; border-radius: 3px; background-color: #6aa9ff; }
+.alles-fill-warn { background-color: #ffb454; }
+.alles-fill-crit { background-color: #ff6b81; }
+
+.alles-shelf-row { spacing: 6px; }
+.alles-shelf-item { padding: 3px 6px; border-radius: 6px; text-align: left; }
+.alles-shelf-item:hover { background-color: rgba(255, 255, 255, 0.08); }

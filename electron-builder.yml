@@ -1,0 +1,26 @@
+# Release packaging: npm run dist (build machine only). End users install the generated .deb or run the AppImage; Node.js/npm are bundled out of the user workflow.
+appId: org.alles.app
+productName: ALLES
+directories:
+  output: dist
+artifactName: ALLES-${version}-${arch}.${ext}
+asar: true
+files:
+  - package.json
+  - src/**/*
+  - assets/**/*
+  - "!src/**/*.test.js"
+  - "!test/**/*"
+  - "!scripts/**/*"
+  - "!install.sh"
+linux:
+  icon: assets/alles.png
+  category: Utility
+  target: [AppImage, deb]
+  executableArgs: ["--window"]          # the menu entry opens the workspace window; the shortcuts run `alles --show` as before
+  desktop:
+    Name: ALLES
+    Comment: Agentic AI desktop assistant
+deb:
+  depends: [libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0]
+  recommends: [espeak-ng, ydotool]

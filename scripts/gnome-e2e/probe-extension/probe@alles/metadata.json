@@ -1,0 +1,6 @@
+{
+  "uuid": "probe@alles",
+  "name": "ALLES test probe",
+  "description": "For the ALLES test scripts only: lets them ask a throw-away GNOME Shell what it is doing. Never install this on a real desktop.",
+  "shell-version": ["46"]
+}
